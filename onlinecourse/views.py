@@ -149,16 +149,29 @@ def show_exam_result(request, course_id, submission_id):
     for i in test:
         selected.append(i['choices'])
     for i in selected:
-        print(Choice.objects.filter(id=i).values('question_id'))
-        print(Choice.objects.filter(id=i).values('is_correct'))
-    question = Question.objects.get(id=2)
-    print(question.question_text)
-    score = Question.is_get_score(question,[4])
-    print(score)
-            
-    
-    
-    
+        y = Choice.objects.filter(id=i).values('question_id')
+        for j in y:
+            print(j['question_id'])
+        print(i,Choice.objects.filter(id=i).values('is_correct'))
+    questions = Course.objects.filter(id=course_id).values('question')
+    # print(questions)
+    x = []
+    for i in range(len(questions)):
+        x.append([])
+        question = Question.objects.filter(id=questions[i]['question'])
+        correct = question.values('choice')
+        for j in selected:
+            y = Choice.objects.filter(id=j).values('question_id')
+            for k in y:
+                print(k['question_id'],questions[i]['question'])
+                if (k['question_id'] == questions[i]['question']):
+                    x[i].append(j)
+        
 
-
-
+                
+                
+        
+    # question = Question.objects.get(id=2)
+    # print(question.question_text)
+    # score = Question.is_get_score(question,[4])
+    # print(score)
