@@ -115,12 +115,12 @@ def submit(request, course_id):
     user = request.user
     enrollment = Enrollment.objects.create(user=user, course=course, mode='honor')
     selected = extract_answers(request)
-    choice = Choice.objects.filter(id=1)
-    print(choice)
     submission = Submission.objects.create(enrollment=enrollment)
-    submission.choices.set(choice)
+    choices = Choice.objects.filter(id__in=selected)
+    submission.choices.set(choices)
     print(submission.id)
-    return HttpResponseRedirect(reverse(viewname='onlinecourse:show_exam_result', args=(course.id,)))
+    print(course.id)
+    return HttpResponseRedirect(reverse(viewname='onlinecourse:show_exam_result', args = (course.id,submission.id)))
 
 # <HINT> A example method to collect the selected choices from the exam form from the request object
 def extract_answers(request):
@@ -141,8 +141,23 @@ def extract_answers(request):
         # Get the selected choice ids from the submission record
         # For each selected choice, check if it is a correct answer or not
         # Calculate the total score
-def show_exam_result(request, course_id):
-    print(course_id)
+def show_exam_result(request, course_id, submission_id):
+    submission = Submission.objects.get(id=submission_id)
+    submission2 = Submission.objects.filter(id=submission_id)
+    test = submission2.values('choices')
+    selected = []
+    for i in test:
+        selected.append(i['choices'])
+    for i in selected:
+        print(Choice.objects.filter(id=i).values('question_id'))
+        print(Choice.objects.filter(id=i).values('is_correct'))
+    question = Question.objects.get(id=2)
+    print(question.question_text)
+    score = Question.is_get_score(question,[4])
+    print(score)
+            
+    
+    
     
 
 
