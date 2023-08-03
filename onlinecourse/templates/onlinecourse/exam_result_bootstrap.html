@@ -69,11 +69,11 @@
                             {%else%}
                                 {% if choice.id in selected %}
                                     <label class="text-danger">
-                                        Selected: {{ choice.choice_text }} || Incorrect
+                                        Incorrect answer: {{ choice.choice_text }}
                                     </label>
                                 {% else %}
                                     <label>
-                                        Unselected: {{ choice.choice_text }} || Correct
+                                        {{ choice.choice_text }}
                                     </label>
                                 {% endif %}
                             {% endif %}
