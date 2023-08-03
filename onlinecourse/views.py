@@ -159,7 +159,6 @@ def show_exam_result(request, course_id, submission_id):
                     x[i].append(j)
         question = Question.objects.get(id=questions[i]['question'])
         score = Question.is_get_score(question,x[i])
-        print(score)
         question_scores.append(score)
     exam_score = int(100*(question_scores.count(True)/len(question_scores)))
     context = {
