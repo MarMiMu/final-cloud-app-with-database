@@ -118,20 +118,16 @@ def submit(request, course_id):
     submission = Submission.objects.create(enrollment=enrollment)
     choices = Choice.objects.filter(id__in=selected)
     submission.choices.set(choices)
-    print(submission.id)
-    print(course.id)
     return HttpResponseRedirect(reverse(viewname='onlinecourse:show_exam_result', args = (course.id,submission.id)))
 
 # <HINT> A example method to collect the selected choices from the exam form from the request object
 def extract_answers(request):
-    print("extract accessed")
     submitted_answers = []
     for key in request.POST:
         if key.startswith('choice'):
             value = request.POST[key]
             choice_id = int(value)
             submitted_answers.append(choice_id)
-    print(submitted_answers)
     return submitted_answers
 
 
@@ -142,38 +138,42 @@ def extract_answers(request):
         # For each selected choice, check if it is a correct answer or not
         # Calculate the total score
 def show_exam_result(request, course_id, submission_id):
+    context = {}
+    course = get_object_or_404(Course, pk=course_id)
     submission = Submission.objects.filter(id=submission_id)
     test = submission.values('choices')
     selected = []
     for i in test:
         selected.append(i['choices'])
     questions = Course.objects.filter(id=course_id).values('question')
-    # print(questions)
     x = []
+    correct_choices = []
+    incorrect_choices = []
+    question_scores = []
     for i in range(len(questions)):
         x.append([])
+        correct_choices.append([])
+        incorrect_choices.append([])
         question = Question.objects.filter(id=questions[i]['question'])
         correct = question.values('choice')
         for j in selected:
             y = Choice.objects.filter(id=j).values('question_id')
             for k in y:
-                # print(k['question_id'],questions[i]['question'])
                 if (k['question_id'] == questions[i]['question']):
                     x[i].append(j)
         question = Question.objects.get(id=questions[i]['question'])
         score = Question.is_get_score(question,x[i])
+        question_scores.append(score)
         all_answers = question.choice_set.filter(is_correct=True)
         selected_correct = question.choice_set.filter(is_correct=True, id__in=x[i])
-        for i in selected_correct:
-            if i not in all_answers:
-                print(i, "is incorrect")
-            else:
-                print(i, "is correct")
-
-                
-                
-        
-    # question = Question.objects.get(id=2)
-    # print(question.question_text)
-    # score = Question.is_get_score(question,[4])
-    # print(score)
+        selected_incorrect = question.choice_set.filter(is_correct=False, id__in=x[i])
+        for choice in range(len(selected_correct)):
+            correct_choices[i].append(selected_correct[choice])
+        for choice in range(len(selected_incorrect)):
+            incorrect_choices[i].append(selected_incorrect[choice])
+    exam_score = int(100*(question_scores.count(True)/len(question_scores)))
+    context = {
+        "course": course,
+        "grade": exam_score,
+    }
+    return render(request, 'onlinecourse/exam_result_bootstrap.html', context)
