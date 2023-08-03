@@ -142,17 +142,11 @@ def extract_answers(request):
         # For each selected choice, check if it is a correct answer or not
         # Calculate the total score
 def show_exam_result(request, course_id, submission_id):
-    submission = Submission.objects.get(id=submission_id)
-    submission2 = Submission.objects.filter(id=submission_id)
-    test = submission2.values('choices')
+    submission = Submission.objects.filter(id=submission_id)
+    test = submission.values('choices')
     selected = []
     for i in test:
         selected.append(i['choices'])
-    for i in selected:
-        y = Choice.objects.filter(id=i).values('question_id')
-        for j in y:
-            print(j['question_id'])
-        print(i,Choice.objects.filter(id=i).values('is_correct'))
     questions = Course.objects.filter(id=course_id).values('question')
     # print(questions)
     x = []
@@ -163,10 +157,18 @@ def show_exam_result(request, course_id, submission_id):
         for j in selected:
             y = Choice.objects.filter(id=j).values('question_id')
             for k in y:
-                print(k['question_id'],questions[i]['question'])
+                # print(k['question_id'],questions[i]['question'])
                 if (k['question_id'] == questions[i]['question']):
                     x[i].append(j)
-        
+        question = Question.objects.get(id=questions[i]['question'])
+        score = Question.is_get_score(question,x[i])
+        all_answers = question.choice_set.filter(is_correct=True)
+        selected_correct = question.choice_set.filter(is_correct=True, id__in=x[i])
+        for i in selected_correct:
+            if i not in all_answers:
+                print(i, "is incorrect")
+            else:
+                print(i, "is correct")
 
                 
                 
