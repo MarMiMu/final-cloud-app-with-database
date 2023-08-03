@@ -147,13 +147,9 @@ def show_exam_result(request, course_id, submission_id):
         selected.append(i['choices'])
     questions = Course.objects.filter(id=course_id).values('question')
     x = []
-    correct_choices = []
-    incorrect_choices = []
     question_scores = []
     for i in range(len(questions)):
         x.append([])
-        correct_choices.append([])
-        incorrect_choices.append([])
         question = Question.objects.filter(id=questions[i]['question'])
         correct = question.values('choice')
         for j in selected:
@@ -163,17 +159,12 @@ def show_exam_result(request, course_id, submission_id):
                     x[i].append(j)
         question = Question.objects.get(id=questions[i]['question'])
         score = Question.is_get_score(question,x[i])
+        print(score)
         question_scores.append(score)
-        all_answers = question.choice_set.filter(is_correct=True)
-        selected_correct = question.choice_set.filter(is_correct=True, id__in=x[i])
-        selected_incorrect = question.choice_set.filter(is_correct=False, id__in=x[i])
-        for choice in range(len(selected_correct)):
-            correct_choices[i].append(selected_correct[choice])
-        for choice in range(len(selected_incorrect)):
-            incorrect_choices[i].append(selected_incorrect[choice])
     exam_score = int(100*(question_scores.count(True)/len(question_scores)))
     context = {
         "course": course,
         "grade": exam_score,
+        "selected": selected, 
     }
     return render(request, 'onlinecourse/exam_result_bootstrap.html', context)

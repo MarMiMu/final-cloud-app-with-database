@@ -113,7 +113,8 @@ class Question(models.Model):
     def is_get_score(self, selected_ids):
        all_answers = self.choice_set.filter(is_correct=True).count()
        selected_correct = self.choice_set.filter(is_correct=True, id__in=selected_ids).count()
-       if all_answers == selected_correct:
+       selected_total = self.choice_set.filter(id__in=selected_ids).count()
+       if all_answers == selected_correct and all_answers == selected_total:
            return True
        else:
            return False
